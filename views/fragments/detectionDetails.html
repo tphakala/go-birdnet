@@ -10,7 +10,7 @@
 			<div class="grid grid-cols-12 gap-4">
 
 				<!-- Species details -->
-				<div class="col-span-8 lg:col-span-4">
+				<div class="col-span-8">
 					<div class="h-full p-3 sm:p-4 bg-base-200 rounded-lg">
 						<div class="flex flex-col gap-0">
 							<span class="text-lg sm:text-2xl font-semibold text-base-content">{{.Note.CommonName}}</span>
@@ -35,7 +35,7 @@
 
 
 				<!-- Species image container -->
-				<div class="col-span-4 lg:col-span-4">
+				<div class="col-span-4">
 					<div class="relative aspect-square max-h-[250px] bg-base-200 rounded-lg overflow-hidden">
 						{{if and .DashboardSettings.Thumbnails (or .DashboardSettings.Thumbnails.Summary .DashboardSettings.Thumbnails.Recent)}}
 							<div class="relative h-full">
@@ -139,7 +139,7 @@
 		</div>
 
 		<!-- Weather conditions section -->
-		<div class="mb-6">
+		<div>
 			<h3 class="text-base lg:text-lg font-semibold text-base-content mb-4">Weather Conditions</h3>
 			<div class="flex flex-wrap items-center gap-6 p-4 bg-base-200 rounded-lg">
 				{{if .Weather}}
@@ -157,10 +157,10 @@
 					<div class="hidden sm:block h-12 w-px bg-base-300"></div>
 
 					<!-- Weather details -->
-					<div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-8">
+					<div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-8">
 						<div class="grid grid-cols-4 gap-4 w-full sm:flex sm:flex-row sm:gap-8">
 							<!-- Temperature -->
-							<div class="flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-2 relative group">
+							<div class="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 relative group">
 								<img 
 									src="/assets/symbols/temperature.svg" 
 									alt="Temperature" 
@@ -175,7 +175,7 @@
 							</div>
 
 							<!-- Precipitation -->
-							<div class="flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-2 relative group">
+							<div class="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 relative group">
 								<img 
 									src="/assets/symbols/umbrella.svg" 
 									alt="Precipitation" 
@@ -191,7 +191,7 @@
 							</div>
 
 							<!-- Wind -->
-							<div class="flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-2 relative group">
+							<div class="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 relative group">
 								<img 
 									src="/assets/symbols/wind.svg" 
 									alt="Wind Speed" 
@@ -207,7 +207,7 @@
 							</div>
 
 							<!-- Humidity -->
-							<div class="flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-2 relative group">
+							<div class="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 relative group">
 								<img 
 									src="/assets/symbols/humidity.svg" 
 									alt="Humidity" 
