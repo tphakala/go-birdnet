@@ -2,7 +2,11 @@
 package imageprovider
 
 import (
+	"encoding/json"
 	"log"
+	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 	"unsafe"
@@ -33,7 +37,8 @@ type BirdImageCache struct {
 	birdImageProvider    ImageProvider
 	nonBirdImageProvider ImageProvider
 	metrics              *metrics.ImageProviderMetrics
-	debug                bool // Add debug flag
+	debug                bool
+	cacheDir             string // Add cache directory path
 }
 
 // emptyImageProvider is an ImageProvider that always returns an empty BirdImage.
@@ -56,21 +61,89 @@ func (c *BirdImageCache) SetImageProvider(provider ImageProvider) {
 // initCache initializes a new BirdImageCache with the given ImageProvider.
 func InitCache(e ImageProvider, t *telemetry.Metrics) *BirdImageCache {
 	settings := conf.Setting()
-	return &BirdImageCache{
+
+	// Create cache directory in user's home directory
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		log.Printf("Warning: Could not get home directory: %v", err)
+		homeDir = "."
+	}
+
+	cacheDir := filepath.Join(homeDir, ".birdnet-go", "imagecache")
+	if err := os.MkdirAll(cacheDir, 0755); err != nil {
+		log.Printf("Warning: Could not create cache directory: %v", err)
+	}
+
+	cache := &BirdImageCache{
 		birdImageProvider:    e,
 		nonBirdImageProvider: &emptyImageProvider{},
 		metrics:              t.ImageProvider,
 		debug:                settings.Realtime.Dashboard.Thumbnails.Debug,
+		cacheDir:             cacheDir,
+	}
+
+	// Load cached images from disk
+	cache.loadCacheFromDisk()
+
+	return cache
+}
+
+// loadCacheFromDisk loads previously cached images from disk
+func (c *BirdImageCache) loadCacheFromDisk() {
+	if c.debug {
+		log.Printf("Debug: Loading image cache from disk: %s", c.cacheDir)
+	}
+
+	files, err := os.ReadDir(c.cacheDir)
+	if err != nil {
+		if c.debug {
+			log.Printf("Debug: Could not read cache directory: %v", err)
+		}
+		return
+	}
+
+	for _, file := range files {
+		if !file.IsDir() && strings.HasSuffix(file.Name(), ".json") {
+			scientificName := strings.TrimSuffix(file.Name(), ".json")
+			data, err := os.ReadFile(filepath.Join(c.cacheDir, file.Name()))
+			if err != nil {
+				if c.debug {
+					log.Printf("Debug: Could not read cache file %s: %v", file.Name(), err)
+				}
+				continue
+			}
+
+			var birdImage BirdImage
+			if err := json.Unmarshal(data, &birdImage); err != nil {
+				if c.debug {
+					log.Printf("Debug: Could not unmarshal cache file %s: %v", file.Name(), err)
+				}
+				continue
+			}
+
+			c.dataMap.Store(scientificName, birdImage)
+			if c.debug {
+				log.Printf("Debug: Loaded cached image for %s", scientificName)
+			}
+		}
 	}
 }
 
-// CreateDefaultCache creates a new BirdImageCache with the default WikiMedia image provider.
-func CreateDefaultCache(metrics *telemetry.Metrics) (*BirdImageCache, error) {
-	provider, err := NewWikiMediaProvider()
+// saveToDisk saves a bird image to the disk cache
+func (c *BirdImageCache) saveToDisk(scientificName string, birdImage BirdImage) {
+	data, err := json.Marshal(birdImage)
 	if err != nil {
-		return nil, err
+		if c.debug {
+			log.Printf("Debug: Could not marshal bird image for %s: %v", scientificName, err)
+		}
+		return
 	}
-	return InitCache(provider, metrics), nil
+
+	filename := filepath.Join(c.cacheDir, scientificName+".json")
+	err = os.WriteFile(filename, data, 0644)
+	if err != nil && c.debug {
+		log.Printf("Debug: Could not write cache file for %s: %v", scientificName, err)
+	}
 }
 
 // Get retrieves the BirdImage for a given scientific name from the cache,
@@ -122,6 +195,7 @@ func (c *BirdImageCache) Get(scientificName string) (BirdImage, error) {
 	}
 
 	c.dataMap.Store(scientificName, fetchedBirdImage)
+	c.saveToDisk(scientificName, fetchedBirdImage)
 	c.metrics.IncrementImageDownloads()
 	c.updateMetrics()
 
@@ -199,4 +273,13 @@ func (c *BirdImageCache) updateMetrics() {
 	} else {
 		log.Println("Warning: Unable to update metrics, ImageProviderMetrics is nil")
 	}
+}
+
+// CreateDefaultCache creates a new BirdImageCache with the default WikiMedia image provider.
+func CreateDefaultCache(metrics *telemetry.Metrics) (*BirdImageCache, error) {
+	provider, err := NewWikiMediaProvider()
+	if err != nil {
+		return nil, err
+	}
+	return InitCache(provider, metrics), nil
 }

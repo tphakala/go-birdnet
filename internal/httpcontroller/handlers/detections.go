@@ -166,6 +166,12 @@ func (h *Handlers) DetectionDetails(c echo.Context) error {
 		return h.NewHandlerError(err, "Failed to retrieve note", http.StatusInternalServerError)
 	}
 
+	// Add weather data using the existing helper function
+	notesWithWeather, err := h.addWeatherAndTimeOfDay([]datastore.Note{note})
+	if err != nil {
+		return h.NewHandlerError(err, "Failed to add weather data", http.StatusInternalServerError)
+	}
+
 	// set spectrogram width, height will be /2
 	const width = 1000 // pixels
 
@@ -176,13 +182,27 @@ func (h *Handlers) DetectionDetails(c echo.Context) error {
 		spectrogramPath = "" // Set to empty string to avoid breaking the template
 	}
 
+	// Get theme from cookie, default to light
+	theme := "light"
+	if cookie, err := c.Cookie("theme"); err == nil && cookie.Value == "dark" {
+		theme = "dark"
+	}
+
 	// Prepare data for rendering in the template
 	data := struct {
-		Note        datastore.Note
-		Spectrogram string
+		Note              datastore.Note
+		Weather           *datastore.HourlyWeather
+		Theme             string
+		Spectrogram       string
+		TimeOfDay         weather.TimeOfDay
+		DashboardSettings *conf.Dashboard
 	}{
-		Note:        note,
-		Spectrogram: spectrogramPath,
+		Note:              note,
+		Weather:           notesWithWeather[0].Weather,
+		Theme:             theme,
+		Spectrogram:       spectrogramPath,
+		TimeOfDay:         notesWithWeather[0].TimeOfDay,
+		DashboardSettings: h.DashboardSettings,
 	}
 
 	// render the detectionDetails template with the data
