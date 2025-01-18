@@ -1,39 +1,78 @@
 {{define "detectionDetails"}}
 
-<!-- Enhanced daisyUI card -->
-<section class="card col-span-12 overflow-hidden bg-base-100 shadow-sm xl:col-span-12">
-	<div class="card-body p-4">
-		<div class="flex justify-between items-center mb-4">
-			<h2 class="card-title text-xl font-semibold text-gray-800">
-				Detection Details for {{.Note.CommonName}} on {{.Note.Date}} at {{.Note.Time}}
-			</h2>
+<!-- Enhanced daisyUI card with theme support -->
+<section class="card col-span-12 overflow-hidden bg-base-100 shadow-sm transition-all duration-200 xl:col-span-12 border border-base-200">
+	<div class="card-body p-6">
+		<!-- Header with species information and details -->
+		<div class="flex flex-col gap-4 mb-6">
+			<!-- Species info with image -->
+			<div class="grid grid-cols-12 gap-4">
+				<!-- Species image container -->
+				<div class="col-span-4 lg:col-span-6">
+					<div class="relative aspect-square max-h-[300px] bg-base-200 rounded-lg overflow-hidden">
+						{{if and .DashboardSettings.Thumbnails (or .DashboardSettings.Thumbnails.Summary .DashboardSettings.Thumbnails.Recent)}}
+							<div class="relative h-full">
+								<img 
+									src="{{thumbnail .Note.ScientificName}}" 
+									alt="{{.Note.CommonName}}"
+									class="object-cover w-full h-full"
+								>
+							</div>
+						{{else}}
+							<div class="flex flex-col items-center justify-center h-full text-base-content/50 p-4">
+								<svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 sm:w-12 sm:h-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+								</svg>
+								<span class="text-xs sm:text-sm text-center">Species images are disabled in settings</span>
+							</div>
+						{{end}}
+					</div>
+				</div>
+
+				<!-- Species details -->
+				<div class="col-span-8 lg:col-span-6 flex flex-col justify-between">
+					<div class="h-full p-3 sm:p-4 bg-base-200 rounded-lg">
+						<h2 class="text-lg sm:text-2xl font-semibold text-base-content">
+							{{.Note.CommonName}}
+						</h2>
+						<span class="text-sm sm:text-base italic">{{.Note.ScientificName}}</span>
+
+						<!-- Date & Time -->
+						<div class="flex items-center gap-2 text-base-content/80">
+							<span class="text-sm sm:text-base font-medium">Date & Time:</span>
+							<span class="text-sm sm:text-base">{{.Note.Date}} at {{.Note.Time}}</span>
+						</div>
+						
+						<!-- Confidence Level -->
+						<div class="flex items-center gap-2 text-base-content/80">
+							<span class="text-sm sm:text-base font-medium">Confidence</span>
+							<div class="confidence-ball {{confidenceColor .Note.Confidence}} text-white text-sm sm:text-base font-medium px-3 sm:px-4 py-1 sm:py-2 rounded-full shadow-sm">
+								{{confidence .Note.Confidence}}
+							</div>
+						</div>
+						
+					</div>
+				</div>
+			</div>
 		</div>
   
-  		<!-- Confidence Level -->
-  		<div class="flex items-center justify-between p-3 mb-4">
-    		<span class="text-gray-700 font-medium">Confidence Level:</span>
-    		<div class="confidence-ball {{confidenceColor .Note.Confidence}} text-white font-medium p-2 rounded-full">
-      			{{confidence .Note.Confidence}}
-    		</div>
-  		</div>
-  
-  		<!-- Audio player -->
-		  <div class="audio-player-container group relative min-w-[50px]">
+  		<!-- Audio player with improved visuals -->
+		<div class="audio-player-container group relative min-w-[50px] rounded-xl overflow-hidden shadow-sm mb-6">
 			<!-- Spectrogram Image -->
 			<img loading="lazy" src="/media/spectrogram?clip={{urlsafe .Note.ClipName}}" alt="Spectrogram"
-			  class="w-full h-auto rounded-md shadow-sm">
+			  class="w-full h-auto rounded-xl">
 	  
 			<!-- Play position indicator -->
-			<div id="position-indicator-0" class="absolute top-0 bottom-0 w-0.5 bg-gray-100 pointer-events-none"
+			<div id="position-indicator-0" class="absolute top-0 bottom-0 w-0.5 bg-primary/50 pointer-events-none"
 			  style="left: 0; transition: left 0.1s linear; opacity: 0;"></div>
 	  
-			<!-- Audio player overlay - Full version -->
+			<!-- Audio player overlay with improved controls -->
 			<div
-			  class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-25 p-3 rounded-b-md transition-opacity duration-300 group-hover:opacity-100 sm:block">
+			  class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-base-300/90 to-base-300/40 backdrop-blur-sm p-4 rounded-b-xl transition-opacity duration-300 opacity-0 group-hover:opacity-100">
 			  <audio id="audio-0" src="/{{urlsafe .Note.ClipName}}" preload="metadata" class="hidden"></audio>
-			  <div class="flex items-center justify-between">
+			  <div class="flex items-center justify-between gap-3">
 				<button id="playPause-0"
-				  class="text-white p-3 rounded-full hover:bg-white hover:bg-opacity-20 flex-shrink-0">
+				  class="text-base-content hover:text-primary p-3 rounded-full hover:bg-base-200 transition-colors duration-200 flex-shrink-0">
 				  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
 					xmlns="http://www.w3.org/2000/svg">
 					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
@@ -43,12 +82,12 @@
 					</path>
 				  </svg>
 				</button>
-				<div id="progress-0" class="flex-grow bg-gray-200 rounded-full h-1.5 mx-2 cursor-pointer">
-				  <div class="bg-blue-600 h-1.5 rounded-full" style="width: 0%"></div>
+				<div id="progress-0" class="flex-grow bg-base-200 rounded-full h-2 cursor-pointer">
+				  <div class="bg-primary h-2 rounded-full transition-all duration-200" style="width: 0%"></div>
 				</div>
-				<span id="currentTime-0" class="text-xs font-medium text-white flex-shrink-0">0:00</span>
+				<span id="currentTime-0" class="text-sm font-medium text-base-content flex-shrink-0">0:00</span>
 				<a href="{{urlsafe .Note.ClipName}}" download
-				  class="text-white p-3 rounded-full hover:bg-white hover:bg-opacity-20 ml-2 flex-shrink-0">
+				  class="text-base-content hover:text-primary p-3 rounded-full hover:bg-base-200 transition-colors duration-200 flex-shrink-0">
 				  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
 					xmlns="http://www.w3.org/2000/svg">
 					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
@@ -57,9 +96,85 @@
 				</a>
 			  </div>
 			</div>
-		  </div>
 		</div>
-      <br>
+
+		<!-- Weather conditions section -->
+		<div class="mb-6">
+			<h3 class="text-base lg:text-lg font-semibold text-base-content mb-4">Weather Conditions at time of detection</h3>
+			<div class="flex flex-wrap items-center gap-6 p-4 bg-base-200 rounded-lg">
+				{{if .Weather}}
+					<!-- Weather icon and main description -->
+					<div class="flex items-center gap-3">
+						<img 
+							src="/assets/symbols/{{if eq .Theme "dark"}}darkmode{{else}}lightmode{{end}}/svg/{{.Weather.WeatherIcon}}{{if eq .TimeOfDay 0}}d{{else if eq .TimeOfDay 1}}n{{else}}m{{end}}.svg" 
+							alt="{{.Weather.WeatherMain}}"
+							class="w-10 h-10 lg:w-12 lg:h-12"
+						>
+						<div class="flex flex-col">
+							<span class="text-xl lg:text-3xl font-semibold">{{.Weather.Temperature}}°</span>
+							<span class="text-xs lg:text-base text-base-content/70">Feels like {{.Weather.FeelsLike}}°</span>
+						</div>
+					</div>
+
+					<!-- Divider -->
+					<div class="h-12 w-px bg-base-300"></div>
+
+					<!-- Weather details -->
+					<div class="flex items-center gap-6">
+						<!-- Precipitation -->
+						<div class="flex items-center gap-2 relative group">
+							<img 
+								src="/assets/symbols/umbrella.svg" 
+								alt="Precipitation" 
+								class="w-4 h-4 lg:w-10 lg:h-10 text-base-content/70"
+							>
+							<div class="flex items-baseline gap-1">
+								<span class="text-sm lg:text-base font-medium">0</span>
+								<span class="text-xs lg:text-sm text-base-content/70">mm</span>
+							</div>
+							<div class="tooltip invisible group-hover:visible">
+								Precipitation
+							</div>
+						</div>
+
+						<!-- Wind -->
+						<div class="flex items-center gap-2 relative group">
+							<img 
+								src="/assets/symbols/wind.svg" 
+								alt="Wind Speed" 
+								class="w-4 h-4 lg:w-10 lg:h-10 text-base-content/70"
+							>
+							<div class="flex items-baseline gap-1">
+								<span class="text-sm lg:text-base font-medium">{{.Weather.WindSpeed}}</span>
+								<span class="text-xs lg:text-sm text-base-content/70">m/s</span>
+							</div>
+							<div class="tooltip invisible group-hover:visible">
+								Wind Speed
+							</div>
+						</div>
+
+						<!-- Humidity -->
+						<div class="flex items-center gap-2 relative group">
+							<img 
+								src="/assets/symbols/humidity.svg" 
+								alt="Humidity" 
+								class="w-4 h-4 lg:w-10 lg:h-10 text-base-content/70"
+							>
+							<div class="flex items-baseline gap-1">
+								<span class="text-sm lg:text-base font-medium">{{.Weather.Humidity}}</span>
+								<span class="text-xs lg:text-sm text-base-content/70">%</span>
+							</div>
+							<div class="tooltip invisible group-hover:visible">
+								Relative Humidity
+							</div>
+						</div>
+					</div>
+				{{else}}
+					<span class="text-base-content/70">Weather data not available</span>
+				{{end}}
+			</div>
+		</div>
+	</div>
 </section>
 
 {{end}}
