@@ -9,7 +9,7 @@
 			<div class="grid grid-cols-12 gap-4">
 				<!-- Species image container -->
 				<div class="col-span-4 lg:col-span-6">
-					<div class="relative aspect-square max-h-[300px] bg-base-200 rounded-lg overflow-hidden">
+					<div class="relative aspect-square max-h-[250px] bg-base-200 rounded-lg overflow-hidden">
 						{{if and .DashboardSettings.Thumbnails (or .DashboardSettings.Thumbnails.Summary .DashboardSettings.Thumbnails.Recent)}}
 							<div class="relative h-full">
 								<img 
@@ -32,14 +32,13 @@
 				<!-- Species details -->
 				<div class="col-span-8 lg:col-span-6 flex flex-col justify-between">
 					<div class="h-full p-3 sm:p-4 bg-base-200 rounded-lg">
-						<h2 class="text-lg sm:text-2xl font-semibold text-base-content">
-							{{.Note.CommonName}}
-						</h2>
-						<span class="text-sm sm:text-base italic">{{.Note.ScientificName}}</span>
+						<div class="flex flex-col gap-0">
+							<span class="text-lg sm:text-2xl font-semibold text-base-content">{{.Note.CommonName}}</span>
+							<span class="text-sm sm:text-base italic">{{.Note.ScientificName}}</span>
+						</div>
 
 						<!-- Date & Time -->
 						<div class="flex items-center gap-2 text-base-content/80">
-							<span class="text-sm sm:text-base font-medium">Date & Time:</span>
 							<span class="text-sm sm:text-base">{{.Note.Date}} at {{.Note.Time}}</span>
 						</div>
 						
@@ -57,50 +56,53 @@
 		</div>
   
   		<!-- Audio player with improved visuals -->
-		<div class="audio-player-container group relative min-w-[50px] rounded-xl overflow-hidden shadow-sm mb-6">
-			<!-- Spectrogram Image -->
-			<img loading="lazy" src="/media/spectrogram?clip={{urlsafe .Note.ClipName}}" alt="Spectrogram"
-			  class="w-full h-auto rounded-xl">
-	  
-			<!-- Play position indicator -->
-			<div id="position-indicator-0" class="absolute top-0 bottom-0 w-0.5 bg-primary/50 pointer-events-none"
-			  style="left: 0; transition: left 0.1s linear; opacity: 0;"></div>
-	  
-			<!-- Audio player overlay with improved controls -->
-			<div
-			  class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-base-300/90 to-base-300/40 backdrop-blur-sm p-4 rounded-b-xl transition-opacity duration-300 opacity-0 group-hover:opacity-100">
-			  <audio id="audio-0" src="/{{urlsafe .Note.ClipName}}" preload="metadata" class="hidden"></audio>
-			  <div class="flex items-center justify-between gap-3">
-				<button id="playPause-0"
-				  class="text-base-content hover:text-primary p-3 rounded-full hover:bg-base-200 transition-colors duration-200 flex-shrink-0">
-				  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-					xmlns="http://www.w3.org/2000/svg">
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-					  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
-					</path>
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-					</path>
-				  </svg>
-				</button>
-				<div id="progress-0" class="flex-grow bg-base-200 rounded-full h-2 cursor-pointer">
-				  <div class="bg-primary h-2 rounded-full transition-all duration-200" style="width: 0%"></div>
+		<div class="mb-6">
+			<h3 class="text-base lg:text-lg font-semibold text-base-content mb-4">Audio</h3>
+			<div class="audio-player-container group relative min-w-[50px] rounded-xl overflow-hidden">
+				<!-- Spectrogram Image -->
+				<img loading="lazy" src="/media/spectrogram?clip={{urlsafe .Note.ClipName}}" alt="Spectrogram"
+				class="w-full h-auto rounded-xl">
+		
+				<!-- Play position indicator -->
+				<div id="position-indicator-0" class="absolute top-0 bottom-0 w-0.5 bg-primary/50 pointer-events-none"
+				style="left: 0; transition: left 0.1s linear; opacity: 0;"></div>
+		
+				<!-- Audio player overlay with improved controls -->
+				<div
+				class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-base-300/90 to-base-300/40 backdrop-blur-sm p-4 rounded-b-xl transition-opacity duration-300 opacity-0 group-hover:opacity-100">
+				<audio id="audio-0" src="/{{urlsafe .Note.ClipName}}" preload="metadata" class="hidden"></audio>
+				<div class="flex items-center justify-between gap-3">
+					<button id="playPause-0"
+					class="text-base-content hover:text-primary p-3 rounded-full hover:bg-base-200 transition-colors duration-200 flex-shrink-0">
+					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+						xmlns="http://www.w3.org/2000/svg">
+						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+						d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+						</path>
+						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+						</path>
+					</svg>
+					</button>
+					<div id="progress-0" class="flex-grow bg-base-200 rounded-full h-2 cursor-pointer">
+					<div class="bg-primary h-2 rounded-full transition-all duration-200" style="width: 0%"></div>
+					</div>
+					<span id="currentTime-0" class="text-sm font-medium text-base-content flex-shrink-0">0:00</span>
+					<a href="{{urlsafe .Note.ClipName}}" download
+					class="text-base-content hover:text-primary p-3 rounded-full hover:bg-base-200 transition-colors duration-200 flex-shrink-0">
+					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+						xmlns="http://www.w3.org/2000/svg">
+						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+						d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+					</svg>
+					</a>
 				</div>
-				<span id="currentTime-0" class="text-sm font-medium text-base-content flex-shrink-0">0:00</span>
-				<a href="{{urlsafe .Note.ClipName}}" download
-				  class="text-base-content hover:text-primary p-3 rounded-full hover:bg-base-200 transition-colors duration-200 flex-shrink-0">
-				  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-					xmlns="http://www.w3.org/2000/svg">
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-					  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-				  </svg>
-				</a>
-			  </div>
+				</div>
 			</div>
 		</div>
 
 		<!-- Weather conditions section -->
 		<div class="mb-6">
-			<h3 class="text-base lg:text-lg font-semibold text-base-content mb-4">Weather Conditions at time of detection</h3>
+			<h3 class="text-base lg:text-lg font-semibold text-base-content mb-4">Weather Conditions</h3>
 			<div class="flex flex-wrap items-center gap-6 p-4 bg-base-200 rounded-lg">
 				{{if .Weather}}
 					<!-- Weather icon and main description -->
@@ -108,11 +110,11 @@
 						<img 
 							src="/assets/symbols/{{if eq .Theme "dark"}}darkmode{{else}}lightmode{{end}}/svg/{{.Weather.WeatherIcon}}{{if eq .TimeOfDay 0}}d{{else if eq .TimeOfDay 1}}n{{else}}m{{end}}.svg" 
 							alt="{{.Weather.WeatherMain}}"
-							class="w-10 h-10 lg:w-12 lg:h-12"
+							class="w-12 md:h-12"
 						>
 						<div class="flex flex-col">
-							<span class="text-xl lg:text-3xl font-semibold">{{.Weather.Temperature}}°</span>
-							<span class="text-xs lg:text-base text-base-content/70">Feels like {{.Weather.FeelsLike}}°</span>
+							<span class="text-3xl font-semibold">{{.Weather.Temperature}}°</span>
+							<span class="text-base text-base-content/70">Feels like {{.Weather.FeelsLike}}°</span>
 						</div>
 					</div>
 
@@ -120,17 +122,17 @@
 					<div class="h-12 w-px bg-base-300"></div>
 
 					<!-- Weather details -->
-					<div class="flex items-center gap-6">
+					<div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-8">
 						<!-- Precipitation -->
 						<div class="flex items-center gap-2 relative group">
 							<img 
 								src="/assets/symbols/umbrella.svg" 
 								alt="Precipitation" 
-								class="w-4 h-4 lg:w-10 lg:h-10 text-base-content/70"
+								class="w-5 h-5 sm:w-10 sm:h-10 text-base-content/70"
 							>
 							<div class="flex items-baseline gap-1">
-								<span class="text-sm lg:text-base font-medium">0</span>
-								<span class="text-xs lg:text-sm text-base-content/70">mm</span>
+								<span class="text-base font-medium">0</span>
+								<span class="text-sm text-base-content/70">mm</span>
 							</div>
 							<div class="tooltip invisible group-hover:visible">
 								Precipitation
@@ -142,11 +144,11 @@
 							<img 
 								src="/assets/symbols/wind.svg" 
 								alt="Wind Speed" 
-								class="w-4 h-4 lg:w-10 lg:h-10 text-base-content/70"
+								class="w-5 h-5 sm:w-10 sm:h-10 text-base-content/70"
 							>
 							<div class="flex items-baseline gap-1">
-								<span class="text-sm lg:text-base font-medium">{{.Weather.WindSpeed}}</span>
-								<span class="text-xs lg:text-sm text-base-content/70">m/s</span>
+								<span class="text-base font-medium">{{.Weather.WindSpeed}}</span>
+								<span class="text-sm text-base-content/70">m/s</span>
 							</div>
 							<div class="tooltip invisible group-hover:visible">
 								Wind Speed
@@ -158,11 +160,11 @@
 							<img 
 								src="/assets/symbols/humidity.svg" 
 								alt="Humidity" 
-								class="w-4 h-4 lg:w-10 lg:h-10 text-base-content/70"
+								class="w-5 h-5 sm:w-10 sm:h-10 text-base-content/70"
 							>
 							<div class="flex items-baseline gap-1">
-								<span class="text-sm lg:text-base font-medium">{{.Weather.Humidity}}</span>
-								<span class="text-xs lg:text-sm text-base-content/70">%</span>
+								<span class="text-base font-medium">{{.Weather.Humidity}}</span>
+								<span class="text-sm text-base-content/70">%</span>
 							</div>
 							<div class="tooltip invisible group-hover:visible">
 								Relative Humidity
